@@ -26,7 +26,7 @@ public class RAGMusicAgent<T> {
         for (T item : matches) {
             context.append(String.format("- %s\n", item));
         }
-        System.out.println(context);
+        // System.out.println(context);
         ps();
         String prompt = String.format("""
             **Task**: You are a %s recommendation assistant. Your goal is to provide personalized recommendations based on the user's query and the context items provided.
