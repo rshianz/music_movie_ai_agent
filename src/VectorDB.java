@@ -34,7 +34,7 @@ public class VectorDB<T> {
         for (int i = 0; i < topK; i++) {
             int maxIndex = findMaxIndex(similarities);
             results.add(items.get(maxIndex));
-            similarities.set(maxIndex, Double.NEGATIVE_INFINITY); // Mark as used
+            similarities.set(maxIndex, Double.NEGATIVE_INFINITY); // Mark as used, wont repet
         }
 
         return results;

@@ -1,10 +1,14 @@
 import com.opencsv.CSVReader;
 import com.opencsv.exceptions.CsvException;
-import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVParser;
+import org.apache.commons.csv.CSVRecord;
+import java.io.Reader;
+
 
 public class SongCSVReader {
     public static List<Song> readSongsFromCSV(String filePath) throws IOException, CsvException {
@@ -62,54 +66,56 @@ public class SongCSVReader {
         return albums;
     }
 
+        public static List<Movie> readMoviesFromCSV(String filePath) throws IOException {
+            List<Movie> movies = new ArrayList<>();
 
-    public static List<Movie> readMoviesFromCSV(String filePath) throws IOException {
-        List<Movie> movies = new ArrayList<>();
-        try (BufferedReader br = new BufferedReader(new FileReader(filePath))) {
-            String line;
-            br.readLine(); // Skip header line
-            while ((line = br.readLine()) != null) {
-                try {
-                    String[] row = parseCSVLine(line);
-                    if (row.length < 9) {
-                        continue;
-                    }
+            try (
+                    Reader reader = new FileReader(filePath);
+                    CSVParser csvParser = new CSVParser(reader, CSVFormat.DEFAULT.withFirstRecordAsHeader().withIgnoreHeaderCase().withTrim())
+            ) {
+                for (CSVRecord record : csvParser) {
+                    // Extract fields from the record
+                    int releaseYear = Integer.parseInt(record.get("Release Year"));
+                    String title = record.get("Title");
+                    String originEthnicity = record.get("Origin/Ethnicity");
+                    String director = record.get("Director");
+                    String cast = record.get("Cast");
+                    String genre = record.get("Genre");
+                    String wikiPage = record.get("Wiki Page");
+                    String plot = record.get("Plot");
 
-                    String title = row[1].trim();
-                    String origin = row[2].trim();
-                    String director = row[3].trim();
-                    String year = row[0].trim();
-                    String genre = row[5].trim();
-                    String plot = row[7].trim();
-
-                    Movie movie = new Movie(title, origin, year, director, genre, plot);
+                    // Create a Movie object and add it to the list
+                    Movie movie = new Movie(releaseYear, title, originEthnicity, director, cast, genre, wikiPage, plot);
                     movies.add(movie);
-                } catch (Exception e) {
-                    System.err.println("Skipping malformed row: " + line);
-                    e.printStackTrace();
                 }
             }
+
+            return movies;
         }
-        return movies;
+
+    private static int countQuotes(String s) {
+        int count = 0;
+        for (char c : s.toCharArray()) {
+            if (c == '"') count++;
+        }
+        return count;
     }
 
     private static String[] parseCSVLine(String line) {
         List<String> values = new ArrayList<>();
         StringBuilder sb = new StringBuilder();
         boolean inQuotes = false;
-
         for (char c : line.toCharArray()) {
             if (c == '"') {
-                inQuotes = !inQuotes; // Toggle quotes
+                inQuotes = !inQuotes;
             } else if (c == ',' && !inQuotes) {
                 values.add(sb.toString());
-                sb.setLength(0); // Reset StringBuilder
+                sb.setLength(0);
             } else {
                 sb.append(c);
             }
         }
-        values.add(sb.toString()); // Add the last field
+        values.add(sb.toString());
         return values.toArray(new String[0]);
     }
-
 }

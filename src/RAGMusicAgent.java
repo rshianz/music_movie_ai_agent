@@ -11,14 +11,14 @@ public class RAGMusicAgent<T> {
         this.llmClient = llmClient;
     }
 
-    public String recommend(String userQuery) throws Exception {
+    public String recommend(String userQuery, String type) throws Exception {
         // Generate query embedding
         ps();
         float[] queryEmbedding = embeddingGenerator.generateEmbedding(userQuery);
 
         // Retrieve top-K items
         ps();
-        List<T> matches = vectorDB.search(queryEmbedding, 15);
+        List<T> matches = vectorDB.search(queryEmbedding, 3);
 
         // Build augmented prompt
         ps();
@@ -26,21 +26,22 @@ public class RAGMusicAgent<T> {
         for (T item : matches) {
             context.append(String.format("- %s\n", item));
         }
+        System.out.println(context);
         ps();
         String prompt = String.format("""
-            **Task**: You are a music and media recommendation assistant. Your goal is to provide personalized recommendations based on the user's query and the context items provided.
-
+            **Task**: You are a %s recommendation assistant. Your goal is to provide personalized recommendations based on the user's query and the context items provided.
+            
             **User Query**: %s
 
             **Context Items**:
             %s
-
+           
             **Instructions**:
             1. Analyze the user's query and the context items.
-            2. Rank the context items based on how well they match the user's query.
-            3. Provide a detailed explanation for why each recommended item matches the user's preferences.
-            4. Suggest additional similar items that the user might like, even if they are not in the context items.
-            5. Format your response clearly and professionally.
+            2. Provide a detailed explanation for why each recommended item matches the user's preferences.
+            3. Suggest additional similar items that the user might like, even if they are not in the context items.
+               and suggest them base on user query.
+            4. Format your response clearly and professionally.
 
             **Output Format**:
             - **Top Recommendations**:
@@ -48,8 +49,8 @@ public class RAGMusicAgent<T> {
               2. [Item Name] by [Artist/Director]: [Explanation]
               ...
             - **Additional Suggestions**: [List of similar items]
-            """, userQuery, context);
-
+            """, type ,userQuery, context);
+//        System.out.println(prompt);
         // Generate response using LLM
         ps();
         System.out.println();

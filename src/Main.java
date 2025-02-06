@@ -75,7 +75,7 @@ public class Main {
                 movieEmbeddings = new ArrayList<>();
                 for (Movie movie : movies) {
                     float[] embedding = embeddingGenerator.generateEmbedding(
-                            movie.getTitle() + " directed by " + movie.getDirector() + " made in " + movie.getOrigin()
+                            movie.getTitle() + " directed by " + movie.getDirector() + " made in " + movie.getOriginEthnicity()
                             + " in " + movie.getGenre() + "genre, description is " + movie.getPlot()
                     );
                     movieEmbeddings.add(embedding);
@@ -98,17 +98,20 @@ public class Main {
                 if (userChoice.equalsIgnoreCase("exit")) {
                     break;
                 }
-
+                String type;
                 RAGMusicAgent<?> agent;
                 switch (userChoice) {
                     case "1":
                         agent = new RAGMusicAgent<>(songDB, embeddingGenerator, llmClient);
+                        type = "Song";
                         break;
                     case "2":
                         agent = new RAGMusicAgent<>(albumDB, embeddingGenerator, llmClient);
+                        type = "Album";
                         break;
                     case "3":
                         agent = new RAGMusicAgent<>(movieDB, embeddingGenerator, llmClient);
+                        type = "Movie";
                         break;
                     default:
                         System.out.println("Invalid choice! Please try again.");
@@ -120,7 +123,7 @@ public class Main {
                 String userQuery = scanner.nextLine();
                 System.out.println("Processing your query ...");
 
-                String response = agent.recommend(userQuery);
+                String response = agent.recommend(userQuery, type);
                 System.out.println("AI Response:\n" + response);
             }
 
